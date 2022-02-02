@@ -3,9 +3,11 @@
 # 撰寫者:zeze
 # '''
 from urllib.request import urlopen
+
+import MySQLdb
+import find_mysql
 import requests
 from bs4 import BeautifulSoup
-
 
 list = []
 
@@ -42,8 +44,6 @@ def shorten(long_url, alias):
     soup = BeautifulSoup(response, 'html.parser')
     return soup.find_all('div', {'class': 'indent'})[1].b.string
 
-
-rgood()
 
 if __name__ == "__main__":
     while 1 == 1:
