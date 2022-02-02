@@ -5,7 +5,7 @@
 from urllib.request import urlopen
 
 import MySQLdb
-import find_mysql
+import find_data
 import requests
 from bs4 import BeautifulSoup
 
