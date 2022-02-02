@@ -2,19 +2,31 @@
 # 目前版本 v1
 # 撰寫者:zeze
 # '''
+import re
 from urllib.request import urlopen
-
 import MySQLdb
-import find_data
+
 import requests
 from bs4 import BeautifulSoup
 
 list = []
 
 
+def connetion():
+    db = MySQLdb.connect(host="localhost",
+                         user="root",
+                         passwd="password",
+                         db="carrefour")
+    cursor = db.cursor()
+    cursor.execute('SELECT * FROM carrefour.goods')
+    global results
+    results = cursor.fetchall()
+
+
 def rgood():
-    content = ""
     text = input("請輸入欲查詢商品的關鍵字: ")
+    global content
+    content = ""
     url = 'https://online.carrefour.com.tw/zh/search?q=' + str(text)
     headers = {
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36"}
@@ -28,10 +40,30 @@ def rgood():
         short_link = shorten(get_page, '')
         goods_name = s.get('data-name')
         goods_price = s.get('data-baseprice')
-        price = '價格:　' + str(goods_price) + '元'
+        good_category = s.get('data-category')
         list.append(short_link)
-        content += f"{goods_name}\t{price}\n{short_link}\n\n"
-        print(content.strip())
+        content += f"{good_category}\n{goods_name}\t{goods_price}\n{short_link}\n"
+        print(content.strip('\n'))
+
+
+def match_sql():
+    for record in results:
+        col0 = record[0]  # 類別
+        col1 = record[1]  # 最低價格
+        col2 = record[2]  # 最高價格
+        col3 = record[3]  # 區域
+        col4 = record[4]  # 左1右2
+        col5 = record[5]  # 櫃子數
+        col6 = record[6]  # 上1下2全3
+        col7 = record[7]  # 備註
+
+
+def parseInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
 
 
 def next_page():
@@ -47,7 +79,9 @@ def shorten(long_url, alias):
 
 if __name__ == "__main__":
     while 1 == 1:
+        connetion()
         rgood()
+        # match_sql()
 
         if len(list) == 0:
             print("商品不存在!")
