@@ -1,7 +1,8 @@
 # '''
-# 目前版本 v1
+# 目前版本 v1.1.0
 # 撰寫者:zeze
 # '''
+
 import re
 from urllib.request import urlopen
 import MySQLdb
@@ -32,18 +33,19 @@ def rgood():
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36"}
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, "lxml")
-    v = soup.find_all('a', class_='gtm-product-alink')
+    num = int(input("您想要查看前幾名熱銷商品: "))
+    v = soup.find_all('a', class_='gtm-product-alink', limit=num)
 
     for s in v:
         serach = s.get('href')
-        get_page = "https://online.carrefour.com.tw" + serach
-        short_link = shorten(get_page, '')
-        goods_name = s.get('data-name')
-        goods_price = s.get('data-baseprice')
-        good_category = s.get('data-category')
-        list.append(short_link)
-        content += f"{good_category}\n{goods_name}\t{goods_price}\n{short_link}\n"
-        print(content.strip('\n'))
+        link = shorten("https://online.carrefour.com.tw" + serach, '')
+        name = s.get('data-name')
+        price = s.get('data-baseprice')
+        category = s.get('data-category')
+        list.append(link)
+        print(category, name, price, link)
+        # content += f"{good_category}\n{goods_name}\t{goods_price}\n{short_link}\n"
+        # print(content)
 
 
 def match_sql():
@@ -87,8 +89,8 @@ if __name__ == "__main__":
             print("商品不存在!")
 
         else:
-            Next = input("是否要查看熱銷商品? (y/n) : ")
+            Next = input("是否要繼續搜尋? (y/n) : ")
             if Next == 'y':
-                next_page()
+                rgood()
             elif Next == 'n':
                 quit()
