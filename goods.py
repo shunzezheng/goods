@@ -3,23 +3,39 @@
 # 撰寫者:zeze
 # '''
 
-import re
-from urllib.request import urlopen
-import MySQLdb
 
-import requests
-from bs4 import BeautifulSoup
+try:
+    import os
+    from urllib.request import urlopen
+    # import MySQLdb
+    import requests
+    from bs4 import BeautifulSoup
+except ModuleNotFoundError:
+    Promote = input("錯誤: 尚未安所需的套件! 是否自動安裝所需套件(Y/n)? : ")
+    if Promote == "Y":
+        command_1 = 'pip install BeautifulSoup4'
+        command_2 = 'pip install requests'
+        command_3 = 'pip install urllib3'
+        os.system(command_1)
+        os.system(command_2)
+        os.system(command_3)
+        basename = os.path.basename(__file__)
+        os.system('python ' + basename)
+        quit()
+    elif Promote == 'n':
+        os.exit()
 
 list = []
 
 
-def connetion():
-    db = MySQLdb.connect(host="localhost",
-                         user="root",
-                         passwd="password",
-                         db="carrefour")
-    cursor = db.cursor()
-    cursor.execute('SELECT * FROM carrefour.goods')
+#
+# def connetion():
+#     db = MySQLdb.connect(host="localhost",
+#                          user="root",
+#                          passwd="password",
+#                          db="carrefour")
+#     cursor = db.cursor()
+#     cursor.execute('SELECT * FROM carrefour.goods')
 
 
 def rgood():
@@ -55,7 +71,7 @@ def shorten(long_url, alias):
 
 if __name__ == "__main__":
     while 1 == 1:
-        connetion()
+        # connetion()
         rgood()
         if len(list) == 0:
             print("商品不存在!")
