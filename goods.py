@@ -46,18 +46,6 @@ def rgood():
     print(content)
 
 
-def parseInt(s):
-    try:
-        int(s)
-        return True
-    except ValueError:
-        return False
-
-
-def next_page():
-    print("Ok")
-
-
 def shorten(long_url, alias):
     URL = "http://tinyurl.com/create.php?source=indexpage&url=" + long_url + "&submit=Make+TinyURL%21&alias=" + alias
     response = urlopen(URL)
@@ -69,10 +57,8 @@ if __name__ == "__main__":
     while 1 == 1:
         connetion()
         rgood()
-
         if len(list) == 0:
             print("商品不存在!")
-
         else:
             Next = input("是否要繼續搜尋? (y/n) : ")
             if Next == 'y':
