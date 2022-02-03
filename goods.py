@@ -20,8 +20,6 @@ def connetion():
                          db="carrefour")
     cursor = db.cursor()
     cursor.execute('SELECT * FROM carrefour.goods')
-    global results
-    results = cursor.fetchall()
 
 
 def rgood():
@@ -37,27 +35,15 @@ def rgood():
     v = soup.find_all('a', class_='gtm-product-alink', limit=num)
 
     for s in v:
+        global category
         serach = s.get('href')
         link = shorten("https://online.carrefour.com.tw" + serach, '')
         name = s.get('data-name')
         price = s.get('data-baseprice')
         category = s.get('data-category')
         list.append(link)
-        print(category, name, price, link)
-        # content += f"{good_category}\n{goods_name}\t{goods_price}\n{short_link}\n"
-        # print(content)
-
-
-def match_sql():
-    for record in results:
-        col0 = record[0]  # 類別
-        col1 = record[1]  # 最低價格
-        col2 = record[2]  # 最高價格
-        col3 = record[3]  # 區域
-        col4 = record[4]  # 左1右2
-        col5 = record[5]  # 櫃子數
-        col6 = record[6]  # 上1下2全3
-        col7 = record[7]  # 備註
+        content += f"{category}\n{name}\t{price}\n{link}\n"
+    print(content)
 
 
 def parseInt(s):
@@ -83,7 +69,6 @@ if __name__ == "__main__":
     while 1 == 1:
         connetion()
         rgood()
-        # match_sql()
 
         if len(list) == 0:
             print("商品不存在!")
