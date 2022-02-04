@@ -16,9 +16,11 @@ except ModuleNotFoundError:
         command_1 = 'pip install BeautifulSoup4'
         command_2 = 'pip install requests'
         command_3 = 'pip install urllib3'
+        command_4 = 'pip install lxml'
         os.system(command_1)
         os.system(command_2)
         os.system(command_3)
+        os.system(command_4)
         basename = os.path.basename(__file__)
         os.system('python ' + basename)
         quit()
