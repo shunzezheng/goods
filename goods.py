@@ -4,6 +4,8 @@
 # '''
 
 # 若無安裝套件則選是否要自動安裝
+
+
 try:
     import os
     import re
@@ -12,6 +14,7 @@ try:
     # import MySQLdb
     import requests
     from bs4 import BeautifulSoup
+    from logging import exception
 except ModuleNotFoundError:
     Promote = input("錯誤: 尚未安所需的套件! 是否自動安裝所需套件(Y/n)? : ")
     if Promote == "Y":
@@ -43,7 +46,7 @@ def disconnection():
 
 
 # 爬蟲獲取商品名稱、價格、熱銷、縮網址
-def goods():
+def goods_info():
     global content, text, list
     text = input("請輸入欲查詢商品的關鍵字: ")
     content = ""
@@ -67,8 +70,8 @@ def goods():
         content += f"\n{category}\n{name}\t{price}\n{link}\n"
 
 
-# 查找商品的字詞與db的category產生關聯
-def find():
+# 爬取線上購物網的商品與db產生相關聯
+def crawler():
     global n_area
     # try:
     category = [record[0] for record in results]
@@ -77,17 +80,23 @@ def find():
     # higtprice = [record[2] for record in results]
     remarks = [record[7] for record in results]
     l_area = []
-    if len(list) == 0:
-        print("商品不存在!")
-    else:
-        for category, area in dict.fromkeys(zip(category, area)):
-            if re.match(text, category):
-                l_area.append(area)
-                n_area = re.sub(r"\[|\]|\'", "", str(l_area)).replace(',', '、')
-        print(text + '可能在: ' + n_area + ' 走道區域')
-        print("以下是商品前五名熱銷結果:\n" + content)
+    for category, area in dict.fromkeys(zip(category, area)):
+        if re.match(text, category):
+            l_area.append(area)
+            n_area = re.sub(r"\[|\]|\'", "", str(l_area)).replace(',', '、')
 
-    print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查是否輸入有誤!):" + content)
+
+# 查找線上購物商品的字詞
+def find_db():
+    if len(list) > 0:
+        try:
+            crawler()
+            print(text + '可能在: ' + n_area + ' 走道區域')
+            print("以下是商品前五名熱銷結果:\n" + content)
+        except NameError:
+            print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查是否輸入有誤!):" + content)
+    elif len(list) == 0:
+        print("商品不存在!")
 
 
 # 縮網址
@@ -99,10 +108,8 @@ def shorten(long_url, alias):
 
 
 if __name__ == "__main__":
-    try:
-        while 1 == 1:
-            connection()
-            goods()
-            find()
-    except:
-        db.close()
+
+    while 1 == 1:
+        connection()
+        goods_info()
+        find_db()
