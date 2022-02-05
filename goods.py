@@ -70,7 +70,6 @@ def goods_info():
 
 # 爬取線上購物網的商品與db產生相關聯
 def crawler(n_area):
-    # try:
     category = [record[0] for record in results]
     area = [record[3] for record in results]
     # lowprice = [record[1] for record in results]
