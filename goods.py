@@ -38,6 +38,10 @@ def connection():
     results = cursor.fetchall()
 
 
+def disconnection():
+    db.close()
+
+
 # 爬蟲獲取商品名稱、價格、熱銷、縮網址
 def goods():
     global content, text, list
@@ -66,23 +70,24 @@ def goods():
 # 查找商品的字詞與db的category產生關聯
 def find():
     global n_area
-    try:
-        category = [record[0] for record in results]
-        area = [record[3] for record in results]
-        # lowprice = [record[1] for record in results]
-        # higtprice = [record[2] for record in results]
-        remarks = [record[7] for record in results]
-        l_area = []
+    # try:
+    category = [record[0] for record in results]
+    area = [record[3] for record in results]
+    # lowprice = [record[1] for record in results]
+    # higtprice = [record[2] for record in results]
+    remarks = [record[7] for record in results]
+    l_area = []
+    if len(list) == 0:
+        print("商品不存在!")
+    else:
         for category, area in dict.fromkeys(zip(category, area)):
             if re.match(text, category):
                 l_area.append(area)
                 n_area = re.sub(r"\[|\]|\'", "", str(l_area)).replace(',', '、')
         print(text + '可能在: ' + n_area + ' 走道區域')
         print("以下是商品前五名熱銷結果:\n" + content)
-    except NameError:
-        if len(list) == 0:
-            print("商品不存在!")
-        print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查是否輸入有誤!):" + content)
+
+    print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查是否輸入有誤!):" + content)
 
 
 # 縮網址
