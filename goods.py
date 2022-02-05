@@ -71,8 +71,7 @@ def goods_info():
 
 
 # 爬取線上購物網的商品與db產生相關聯
-def crawler():
-    global n_area
+def crawler(n_area):
     # try:
     category = [record[0] for record in results]
     area = [record[3] for record in results]
@@ -84,16 +83,18 @@ def crawler():
         if re.match(text, category):
             l_area.append(area)
             n_area = re.sub(r"\[|\]|\'", "", str(l_area)).replace(',', '、')
+    return n_area
 
 
 # 查找線上購物商品的字詞
 def find_db():
     if len(list) > 0:
+        # noinspection PyBroadException
         try:
-            crawler()
-            print(text + '可能在: ' + n_area + ' 走道區域')
+            # crawler()
+            print(text + '可能在: ' + crawler(print()) + ' 走道區域')
             print("以下是商品前五名熱銷結果:\n" + content)
-        except NameError:
+        except:
             print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查是否輸入有誤!):" + content)
     elif len(list) == 0:
         print("商品不存在!")
