@@ -95,7 +95,7 @@ def find_db():
             print(text + '可能在: ' + crawler(print()) + ' 走道區域')
             print("以下是商品前五名熱銷結果:\n" + content)
         except:
-            print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查是否輸入有誤!):" + content)
+            print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查是否輸入有誤!):\n" + content)
     elif len(list) == 0:
         print("商品不存在!")
 
