@@ -83,8 +83,6 @@ def find():
         if len(list) == 0:
             print("商品不存在!")
         print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查是否輸入有誤!):" + content)
-    else:
-        print("以下是商品前五名熱銷結果:\n" + content)
 
 
 # 縮網址
