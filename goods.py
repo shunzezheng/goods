@@ -109,8 +109,11 @@ def shorten(long_url, alias):
 
 
 if __name__ == "__main__":
-
-    while 1 == 1:
-        connection()
-        goods_info()
-        find_db()
+    # noinspection PyBroadException
+    try:
+        while 1 == 1:
+            connection()
+            goods_info()
+            find_db()
+    except:
+        disconnection()
