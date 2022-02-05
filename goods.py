@@ -4,8 +4,6 @@
 # '''
 
 # 若無安裝套件則選是否要自動安裝
-
-
 try:
     import os
     import re
