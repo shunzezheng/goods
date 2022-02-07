@@ -12,16 +12,15 @@ try:
     # import MySQLdb
     import requests
     from bs4 import BeautifulSoup
-    from logging import exception
 except ModuleNotFoundError:
     Promote = input("錯誤: 尚未安所需的套件! 是否自動安裝所需套件(Y/n)? : ")
-    if Promote == "Y":
+    if Promote == "Y" or "y":
         command = 'pip install BeautifulSoup4 requests urllib3 lxml mysqlclient'
         os.system(command)
         basename = os.path.basename(__file__)
         os.system('python ' + basename)  # 執行此命令
         quit()
-    elif Promote == 'n':
+    elif Promote == "N" or "n" or "":
         exit()
 
 # 建立db連線到本地端資訊
