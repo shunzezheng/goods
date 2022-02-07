@@ -33,10 +33,14 @@ db = MySQLdb.connect(host="localhost",
 
 # db連線
 def connection():
-    cursor = db.cursor()
-    cursor.execute('SELECT * FROM carrefour.goods')
-    global results
-    results = cursor.fetchall()
+    # noinspection PyBroadException
+    try:
+        cursor = db.cursor()
+        cursor.execute('SELECT * FROM carrefour.goods')
+        global results
+        results = cursor.fetchall()
+    except:
+        print("錯誤:無法連上db!")
 
 
 def disconnection():
@@ -62,7 +66,7 @@ def goods_info():
         serach = s.get('href')
         link = shorten("https://online.carrefour.com.tw" + serach, '')
         name = s.get('data-name')
-        price = s.get('data-baseprice')
+        price = s.get('data-baseprice') + '元'
         category = s.get('data-category')
         list.append(link)
         content += f"\n{category}\n{name}\t{price}\n{link}\n"
