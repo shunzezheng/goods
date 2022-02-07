@@ -14,13 +14,13 @@ try:
     from bs4 import BeautifulSoup
 except ModuleNotFoundError:
     Promote = input("錯誤: 尚未安所需的套件! 是否自動安裝所需套件(Y/n)? : ")
-    if Promote == "Y" or "y":
+    if Promote == "Y":
         command = 'pip install BeautifulSoup4 requests urllib3 lxml mysqlclient'
         os.system(command)
         basename = os.path.basename(__file__)
         os.system('python ' + basename)  # 執行此命令
         quit()
-    elif Promote == "N" or "n" or "":
+    elif Promote == "n":
         exit()
 
 # 建立db連線到本地端資訊
@@ -58,7 +58,7 @@ def goods_info():
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, "lxml")  # Parser選用lxml，較為快速(?!)
     # num = int(input("您想要查看前幾名熱銷商品: "))
-    v = soup.find_all('a', class_='gtm-product-alink', limit=5)  # 前五名
+    v = soup.find_all('a', class_='gtm-product-alink', limit=5)  # 前五項熱門
     # 撈資料
     for s in v:
         global category
@@ -88,15 +88,22 @@ def crawler(n_area):
 
 # 查找線上購物商品的字詞
 def find_db():
+    # next = input("是否查看前五名人氣熱銷商品(Y/n)? : ")
     if len(list) > 0:
         # noinspection PyBroadException
         try:
             print(text + '可能在: ' + crawler(print()) + ' 走道區域')
-            print("以下是商品前五名熱銷結果:\n" + content)
+            print("以下是商品熱門結果:\n" + content)
+            # if next == "Y":
+            #     pop_goods()
         except:
             print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查關鍵字詞是否輸入有誤!):\n" + content)
     elif len(list) == 0:
         print("商品不存在!")
+
+
+def pop_goods():
+    print("以下是 {} 前五名人氣熱銷商品: ".format(text))
 
 
 # 縮網址
@@ -114,5 +121,6 @@ if __name__ == "__main__":
             connection()
             goods_info()
             find_db()
+            pop_goods()
     except:
         disconnection()
