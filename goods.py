@@ -91,7 +91,6 @@ def find_db():
     if len(list) > 0:
         # noinspection PyBroadException
         try:
-            # crawler()
             print(text + '可能在: ' + crawler(print()) + ' 走道區域')
             print("以下是商品前五名熱銷結果:\n" + content)
         except:
