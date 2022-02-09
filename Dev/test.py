@@ -1,7 +1,7 @@
 import time
 
-import requests
-from requests.exceptions import MissingSchema, InvalidURL
+# import requests
+# from requests.exceptions import MissingSchema, InvalidURL
 from requests_html import HTMLSession
 
 
