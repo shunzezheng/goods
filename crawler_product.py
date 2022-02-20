@@ -6,14 +6,16 @@
 #     \___||_|   \__,_|  \_/\_/  |_| \___||_|    | .__/ |_|   \___/  \__,_| \__,_| \___| \__|
 #                                                | |
 #                                                |_|
-
-# '''
-# 目前版本 v1.5.0
+#
+#
+# 目前版本 v1.6.0
 # 撰寫成員:余若榛、鄭舜澤
-# '''
+
+
 # 若無安裝套件則選是否要自動安裝
 try:
     import os
+    import io
     import re
     import MySQLdb
     import asyncio
@@ -35,19 +37,16 @@ except ModuleNotFoundError:
         command = 'pip3 install -r requirements.txt'
         os.system(command)
         basename = os.path.basename(__file__)
-        os.system('python ' + basename)  # 執行此命令
+        os.system('python ' + basename)  # automatic run script on root
         quit()
     elif Promote=="n":
         exit()
 
-# 建立db連線到本地端資訊
-db = MySQLdb.connect(host="localhost",
-    user="root",
-    passwd="password",
-    db="carrefour")
+# local connection info
+db = MySQLdb.connect(host="localhost", user="root", passwd="password", db="carrefour")
 
 
-# db連線
+# connection to database and execute query
 def connection():
     # noinspection PyBroadException
     try:
@@ -56,24 +55,69 @@ def connection():
         global results
         results = cursor.fetchall()
     except:
-        print("錯誤:無法連上db!")
+        print("error:Disable connections!")
 
 
+# connection to database
 def disconnection():
     db.close()
 
 
+msg = '''
+您好，歡迎使用本系統!
+請輸入'1': 查詢商品資訊
+請輸入'2': 查詢商家資訊
+請輸入'3': 查看本月DM
+'''
+
+business_info = '''
+家樂福 中原店
+服務選項: 店內購物 · 路邊取貨 · 外送
+地址： 320桃園市中壢區中華路二段501號
+營業時間： 24 小時營業
+健康與安全: 必須戴口罩 · 需要測量體溫 · 員工有配戴口罩 · 員工會接受體溫測量
+電話： 080 020 0359
+'''
+
+
+def show_menu():
+    with open('ascii_art.txt', 'r', encoding='UTF-8') as f:
+        for line in f:
+            print(line.rstrip())
+    # try:
+    print(msg, end='')
+    opts = input(':')
+    if opts=='1':
+        while 1==1:
+            connection()
+            goods_info()
+            find_db()
+    elif opts=='2':
+        print(business_info)
+        show_menu()
+    elif opts=='3':
+        catalogs(url_api)
+        show_menu()
+    else:
+        print('輸入錯誤!')
+        show_menu()
+
+
+# except Exception as e:
+#     disconnection()
+#     print(e)
+
+
+# recognize speech using Google Speech Recognition
 def ASR():
+    global words
     # obtain audio from the microphone
     r = sr.Recognizer()
-    # 語音讀取
+    # read the audio
     with sr.Microphone() as source:
         # create the ambient noise energy level
-
-        r.adjust_for_ambient_noise(source, duration=0)
-        audio = r.listen(source)  # 檢測到靜音停止
-
-    # recognize speech using Google Speech Recognition
+        r.adjust_for_ambient_noise(source, duration=0)  # duration=0 not restrain ambient noise
+        audio = r.listen(source)  # recognize finished stop
     dancing = '''
             ⊂_ヽ
             　 ＼＼ 
@@ -94,8 +138,8 @@ def ASR():
     try:
         words = r.recognize_google(audio, language="zh-TW")
         print(words, dancing)
-        text = input("請按下Enter鍵後進行搜尋!")
-        if text=="":
+        blank = input("請按下Enter鍵後進行搜尋!")
+        if blank=="":
             return words
         else:
             return ASR()
@@ -113,63 +157,69 @@ def ASR():
 　＼二つ
         '''
         print('無法辨識喔，請重新再說一次!', cat)
+        print('聆聽中......')
         return ASR()
-    except sr.RequestError as e:
-        print("No response from Google Speech Recognition service: {0}".format(e))
+    except sr.RequestError as err:
+        print("No response from Google Speech Recognition service: {0}".format(err))
 
 
-def loading(t):
-    for i in range(100 + 1):
-        time.sleep(t / 100)
-        sys.stdout.write(("\r查詢中... [ %d" % i + "% ] "))
+def loading(durtion):
+    for num in range(100 + 1):
+        time.sleep(durtion / 100)
+        sys.stdout.write(("\r查詢中... [ %d" % num + "% ] "))
         sys.stdout.flush()
 
 
-t = threading.Thread(target=loading, args=(7,))
-
-
-# 爬蟲獲取商品名稱、價格、熱銷、縮網址
+# crawler the product info (name、link、price、pop)
 def goods_info():
-    global content, text, list, pop_result, t1
+    global content, text, listx, pop_result, t1, path
     content = ""
-    list = []
-
+    listx = []
     print("請輸入欲查詢商品的關鍵字(語音輸入):", end='')
     url = 'https://online.carrefour.com.tw/zh/search?q=' + str(ASR() if not None else print("error!"))
-    # print("搜尋中••••請稍後!")
-    # text = ASR()
-    # str(stext=ASR()) if None else str(wtext)
-    # headers = {"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-    #                          "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36"}
-    # response = requests.get(url, headers=headers)
     user_agent = UserAgent()
     asession = req.AsyncHTMLSession()
-
-    t = threading.Thread(target=loading, args=(7,))
-    t.start()
-    t1 = time.time()
     response = requests.get(url, headers={'user-agent': user_agent.random})
     soup = BeautifulSoup(response.text, "lxml")  # Parser選用lxml，較為快速
-    # 撈資料
+    # extract the html tag <a> sections
     extract = soup.find_all('a', class_='gtm-product-alink', limit=3)
     ele = [s.get('href') for s in extract]
-    try:
-        pop_result = asession.run(pop_goods, urls=ele)
-    except:
-        pass
 
-    for (s, items) in zip(extract, [0, 1, 2]):
-        search = s.get('href')
-        link = shorten("https://online.carrefour.com.tw" + search, '')
-        name = s.get('data-name')
-        price = s.get('data-baseprice') + '元'
-        category = s.get('data-category')
-        list.append(link)
-        pop = '與此商品之相關熱銷商品:\n' + str(pop_result[items])
-        content += f"\n{category}\n{name}\t{price}\n{link}\n{pop}\n"
-    last = time.time() - t1
-    print('\n搜尋時間', last, '秒')
-    t.join()
+    if len(ele) > 0:
+        listx.append(ele)
+        path = './recode/{}.txt'
+        if os.path.isfile(path.format(words)):
+            with io.open(path.format(words), encoding='utf8') as recode:
+                good_info = recode.read()
+                print(good_info)
+        else:
+            t = threading.Thread(target=loading, args=(5,))
+            t.start()
+            t1 = time.time()
+            try:
+                pop_result = asession.run(pop_goods, urls=ele)
+            except:
+                pass
+            for (s, items) in zip(extract, [0, 1, 2]):
+                search = s.get('href')
+                link = shorten("https://online.carrefour.com.tw" + search, '')
+                name = s.get('data-name')
+                price = s.get('data-baseprice') + '元'
+                category = s.get('data-category')
+                listx.append(link)
+                pop = '與此商品之相關熱銷商品:\n' + str(pop_result[items])
+                content += f"\n{category}\n{name}\t{price}\n{link}\n{pop}"
+            last = time.time() - t1
+            print('\n搜尋時間', last, '秒')
+            print("以下是商品熱門結果:\n" + content)
+            save_data_to_local()
+    else:
+        print("商品不存在!")
+
+
+def save_data_to_local():
+    file = open('recode/{}.txt'.format(words), 'w+', encoding='utf8')
+    file.write('關鍵字:{}\n'.format(words) + content)
 
 
 async def pop_goods(url):
@@ -177,76 +227,58 @@ async def pop_goods(url):
     asession = req.AsyncHTMLSession()
     pre = 'https://online.carrefour.com.tw'
     r = await asession.get(pre + url)
-    await r.html.arender()
+    try:
+        await r.html.arender()
+    except:
+        await r.html.arender(timeout=20)
+    e3 = r.html.find("#cq_recomm_slot-89984c043f9f6c5dfe5899d4eb > div > div > div > div:nth-child(9) > div.photo > a")
+    e2 = r.html.find("#cq_recomm_slot-89984c043f9f6c5dfe5899d4eb > div > div > div > div:nth-child(6) > div.photo > a")
     e1 = r.html.find("#cq_recomm_slot-89984c043f9f6c5dfe5899d4eb > div > div > div > div:nth-child(3) > div.photo > a")
-
-    e2 = r.html.find("#cq_recomm_slot-89984c043f9f6c5dfe5899d4eb > div > div > div > div:nth-child(6) > "
-                     "div.photo > a")
-    e3 = r.html.find("#cq_recomm_slot-89984c043f9f6c5dfe5899d4eb > div > div > div > div:nth-child(9) > "
-                     "div.photo > a")
     for r1, r2, r3 in zip(e1, e2, e3):
         i = '第 ' + r1.attrs['data-position'] + ' 名 ' + r1.attrs['data-name'] + ' ' + r1.attrs['data-price'] + ' 元 '
+        await asyncio.sleep(1)
         j = '第 ' + r2.attrs['data-position'] + ' 名 ' + r2.attrs['data-name'] + ' ' + r2.attrs['data-price'] + ' 元 '
+        await asyncio.sleep(1)
         k = '第 ' + r3.attrs['data-position'] + ' 名 ' + r3.attrs['data-name'] + ' ' + r3.attrs['data-price'] + ' 元 '
-
     return i, j, k
+
+
+url_api = 'https://www.carrefour.com.tw/console/api/v1/catalogues/%E8%BC%95%E5%A5%A2%E7%BE%8E%E5%A6%9D'
+
+
+def catalogs(url_api):
+    global urls
+    session = HTMLSession()
+    r = session.get(url_api, headers={'accept': 'application/json'})
+    r.html.render()
+    responseData = r.json()
+    urls = responseData['data']['images']
+    print(urls)
 
 
 # 爬取線上購物網的商品與db產生相關聯
 def crawler(n_area):
     category = [record[0] for record in results]
     area = [record[3] for record in results]
-    # lowprice = [record[1] for record in results]
-    # higtprice = [record[2] for record in results]
-    remarks = [record[7] for record in results]
     l_area = []
     for category, area in dict.fromkeys(zip(category, area)):
-        if re.match(text, category):
+        if re.match(words, category):
             l_area.append(area)
-            n_area = re.sub(r"\[|\]|\'", "", str(l_area)).replace(',', '、')
+        key = dict.fromkeys(l_area).keys()
+        n_area = re.sub(r"\[|\]|\'", "", str(list(key)).replace(',', '、'))
     return n_area
 
 
 # 查找線上購物商品的字詞
 def find_db():
-    if len(list) > 0:
-        # noinspection PyBroadException
-        try:
-            print(text + '可能在: ' + crawler(print()) + ' 走道區域')
-            print("以下是商品熱門結果:\n" + content)
-        except:
-            print('錯誤:資料庫未建立種類資訊!', "\n以下是商品有關連性的結果(若無結果，請檢查關鍵字詞是否輸入有誤!):\n" + content)
-    elif len(list)==0:
-        print("商品不存在!")
-    else:
-        pass
-
-    # def pop_goods():
-    #     next = input("是否查看前五名人氣熱銷商品(Y/n)? : ")
-    rcontent = ''
-    if next=="Y":
-        # response_hot = requests.get(list[0])
-        # soup_hot = BeautifulSoup(response_hot.text, "lxml")
-        # k = soup_hot.find_all('a', class_='gtm-product-alink-hotsale')
-        # for t in k:
-        #     rank = t.get('data-position')
-        #     rname = t.get('data-name')
-        #     rcontent += f"\n{rank}\n{rname}\n"
-        # print(rcontent)
-        print('OK')
-        # pop = [list[2] for test.find in a]
-        # print(pop)
-        # test.find(list[0])
-        # test.find(list[1])
-        # test.find(list[2])
+    if len(listx) > 0:
+        if len(crawler(print())) > 0:
+            print(words + '可能在: ' + crawler(print()) + ' 走道區域')
+        else:
+            print('錯誤:資料庫未建立種類資訊，無法得知商品位在哪些走道區域!')
 
 
-    # print("以下是 {} 前五名人氣熱銷商品: ".format(text))
-
-
-    # 縮網址
-
-
+# 縮網址
 def shorten(long_url, alias):
     URL = "http://tinyurl.com/create.php?source=indexpage&url=" + long_url + "&submit=Make+TinyURL%21&alias=" + alias
     response = urlopen(URL)
@@ -255,15 +287,4 @@ def shorten(long_url, alias):
 
 
 if __name__=="__main__":
-    with open('ascii_art.txt', 'r') as f:
-        for line in f:
-            print(line.rstrip())
-    # noinspection PyBroadException
-    try:
-        while 1==1:
-            connection()
-            goods_info()
-            find_db()
-    except Exception as e:
-        disconnection()
-        print(e)
+    show_menu()
